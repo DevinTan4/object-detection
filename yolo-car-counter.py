@@ -6,6 +6,7 @@ import time
 import serial
 from sort import *
 import numpy as np
+from flask import Flask, render_template, request, jsonify
 
 cap = cv2.VideoCapture('asset/videos/pradita-vehicle-counting.mp4') # For Video
 # cap.set(4, 720)
@@ -30,7 +31,7 @@ mask = cv2.imread("asset/images/mask.png")
 # Tracking
 tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.3)
 
-limits = [826, 666, 1378, 634]
+limitsIn = [826, 666, 1378, 634]
 
 totalCount = []
 carCount = []
@@ -44,11 +45,21 @@ baud_rate = 9600
 ser = serial.Serial(serial_port, baud_rate)
 time.sleep(2)
 
+# def control_led(color):
+#     if color == 'yellow':
+#         ser.write(b'Y')
+#     elif color == 'red':
+#         ser.write(b'R')
+
 def control_led(color):
-    if color == 'yellow':
-        ser.write(b'Y')
+    if color == 'green':
+        ser.write(b'G')
     elif color == 'red':
         ser.write(b'R')
+    elif color == 'motorbike':
+        ser.write(b'M')
+    elif color == 'car':
+        ser.write(b'C')
 
 while True:
     success, img = cap.read()
@@ -87,7 +98,7 @@ while True:
     # print(fps)
 
     resultsTracker = tracker.update(detections)
-    cv2.line(img, (limits[0],limits[1]), (limits[2],limits[3]), (0,0,255), thickness=5)
+    cv2.line(img, (limitsIn[0],limitsIn[1]), (limitsIn[2],limitsIn[3]), (0,0,255), thickness=5)
 
     for result in resultsTracker:
         x1,y1,x2,y2,id = result
@@ -100,20 +111,30 @@ while True:
         cx,cy = x1+w//2,y1+h//2
         cv2.circle(img, (cx,cy), 5, (255,0,255), cv2.FILLED)
 
-        if limits[0] < cx < limits[2] and limits[1] - 20 < cy < limits[1] + 20:
+        if limitsIn[0] < cx < limitsIn[2] and limitsIn[1] - 20 < cy < limitsIn[1] + 20:
             if cls == 2 or cls == 7:
                 if id not in carCount:
                     carCount.append(id)
             elif cls == 3:  # Motorbike
                 if id not in motorbikeCount:
                     motorbikeCount.append(id)
-            cv2.line(img, (limits[0], limits[1]), (limits[2], limits[3]), (0, 255, 0), thickness=5)
+            cv2.line(img, (limitsIn[0], limitsIn[1]), (limitsIn[2], limitsIn[3]), (0, 255, 0), thickness=5)
 
     # Control LED based on carCount
-    if len(motorbikeCount) == 1:
+    # if len(motorbikeCount) == 1:
+    #     control_led('red')
+    # elif len(motorbikeCount) < 1:
+    #     control_led('yellow')
+
+    # Control LED based on motorbikeCount and carCount
+    if len(motorbikeCount) < 1 and len(carCount) < 1:
+        control_led('green')
+    elif len(motorbikeCount) == 1 and len(carCount) == 1:
         control_led('red')
-    elif len(motorbikeCount) < 1:
-        control_led('yellow')
+    elif len(motorbikeCount) < 1 and len(carCount) == 1:
+        control_led('motorbike')
+    elif len(motorbikeCount) == 1 and len(carCount) < 1:
+        control_led('car')
 
     cv2.putText(img, str(len(carCount)), (255, 100), cv2.FONT_HERSHEY_PLAIN, 5, (50, 50, 255), 8)
     cv2.putText(img, str(len(motorbikeCount)), (255, 260), cv2.FONT_HERSHEY_PLAIN, 5, (50, 50, 255), 8)
