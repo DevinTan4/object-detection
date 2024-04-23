@@ -15,15 +15,25 @@ import time
 app = Flask(__name__)
 CORS(app)
 motorbike_count = 0
+car_count = 0
 
 @app.route('/api/motorbike', methods=['GET'])
 def get_motorbikeCount():
     global motorbike_count
     return jsonify({'motorbike_count': motorbike_count})
 
+@app.route('/api/car', methods=['GET'])
+def get_carCount():
+    global car_count
+    return jsonify({'car_count': car_count})
+
 def update_motorbike_count(count):
     global motorbike_count
     motorbike_count = count
+
+def update_car_count(count):
+    global car_count
+    car_count = count
 
 def run_flask_app():
     app.run(debug=True, use_reloader=False, port=8080)
@@ -144,4 +154,5 @@ while True:
     cv2.waitKey(1)
 
     update_motorbike_count(len(motorbikeCount))
+    update_car_count(len(carCount))
 
