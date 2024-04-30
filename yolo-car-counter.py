@@ -36,7 +36,7 @@ def update_car_count(count):
     car_count = count
 
 def run_flask_app():
-    app.run(debug=True, use_reloader=False, port=8080)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=8080)
 
 flask_thread = Thread(target=run_flask_app)
 flask_thread.start()
@@ -45,7 +45,7 @@ cap = cv2.VideoCapture('asset/videos/pradita-vehicle-counting.mp4') # For Video
 # cap.set(4, 720)
 # cap.set(3, 1280)
 
-model = YOLO("yolov8n.pt")
+model = YOLO("yolov8m.pt")
 
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
               "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
@@ -71,7 +71,7 @@ carCount = []
 motorbikeCount = []
 
 # Define the ESP32 serial port and baud rate
-serial_port = 'COM5'
+serial_port = 'COM7'
 baud_rate = 9600
 
 # Open serial connection to ESP32
