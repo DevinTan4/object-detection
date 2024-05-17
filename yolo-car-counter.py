@@ -41,7 +41,7 @@ def run_flask_app():
 flask_thread = Thread(target=run_flask_app)
 flask_thread.start()
 
-cap = cv2.VideoCapture('asset/videos/pradita-vehicle-counting.mp4') # For Video
+cap = cv2.VideoCapture('asset/videos/pradita-vehicle-counting2.mp4') # For Video
 # cap.set(4, 720)
 # cap.set(3, 1280)
 
@@ -59,13 +59,13 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
               "teddy bear", "hair drier", "toothbrush"
               ]
 
-mask = cv2.imread("asset/images/mask.png")
+mask = cv2.imread("asset/images/mask2.png")
 
 # Tracking
 tracker = Sort(max_age=20, min_hits=3, iou_threshold=0.3)
 
 limitsIn = [826, 666, 1378, 634]
-# limitsOut = [822, 366, 442, 362]
+limitsOut = [346, 486, 734, 563]
 
 totalCount = []
 carCount = []
@@ -118,7 +118,7 @@ while True:
 
     resultsTracker = tracker.update(detections)
     cv2.line(img, (limitsIn[0], limitsIn[1]), (limitsIn[2], limitsIn[3]), (0, 0, 255), thickness=5)
-    # cv2.line(img, (limitsOut[0], limitsOut[1]), (limitsOut[2], limitsOut[3]), (0, 0, 255), thickness=5)
+    cv2.line(img, (limitsOut[0], limitsOut[1]), (limitsOut[2], limitsOut[3]), (0, 0, 255), thickness=5)
 
     for result in resultsTracker:
         x1, y1, x2, y2, id = result
@@ -139,13 +139,13 @@ while True:
                     motorbikeCount.append(id)
             cv2.line(img, (limitsIn[0], limitsIn[1]), (limitsIn[2], limitsIn[3]), (0, 255, 0), thickness=5)
 
-        # if limitsOut[0] < cx < limitsOut[2] and limitsOut[1] - 20 < cy < limitsOut[1] + 20:
-        #     if cls in [2, 7]:
-        #         if carCount:
-        #             carCount.pop(0)
-        #     elif cls == 3:
-        #         if motorbikeCount:
-        #             motorbikeCount.pop(0)
+        if limitsOut[0] < cx < limitsOut[2] and limitsOut[1] - 20 < cy < limitsOut[1] + 20:
+            if cls in [2, 7]:
+                if carCount:
+                    carCount.pop(0)
+            elif cls == 3:
+                if motorbikeCount:
+                    motorbikeCount.pop(0)
 
     # Control LED based on motorbikeCount and carCount
     if len(motorbikeCount) < 1 and len(carCount) < 1:
